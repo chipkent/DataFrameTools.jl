@@ -1,0 +1,4 @@
+name = "DataFrameTools"
+uuid = "ff0d0012-cacc-467c-a675-b36108f55689"
+authors = ["David R. (Chip) Kent IV <chipkent@cecropiacapital.com>"]
+version = "0.1.0"
