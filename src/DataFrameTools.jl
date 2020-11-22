@@ -1,5 +1,5 @@
 module DataFrameTools
 
-greet() = print("Hello World!")
+import("io.jl")
 
 end # module
