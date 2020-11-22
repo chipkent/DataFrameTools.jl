@@ -1,4 +1,4 @@
 
-using DataFrameTools
+using Test, DataFrameTools, DataFrames
 
-include("test_io.jl")
+include("io.jl")

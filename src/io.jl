@@ -3,6 +3,7 @@ using Logging
 using DataFrames
 using ZipFile
 using CSV
+using Serialization
 using JLD2
 using Feather
 using Arrow
@@ -79,7 +80,7 @@ function uncompress(f::Function, file::AbstractString)
         zfiles = ZipFile.Reader(file)
 
         try
-            if size(zfiles.files) != 1
+            if size(zfiles.files,1) != 1
                 throw(ErrorException("Zip file does not contain exactly one file: zipfile=$file contents=$(zfiles.files)"))
             end
 
@@ -104,7 +105,7 @@ end
 """
 Writes a DataFrame to a file.  The file suffix determines how the DataFrame is serialized.
 """
-function df_write!(file::AbstractString, df::DataFrame)
+function df_write(file::AbstractString, df::DataFrame)
     format = file_format(file)
     @debug "BEGIN df_write: $format $file"
     t = time()
@@ -112,15 +113,19 @@ function df_write!(file::AbstractString, df::DataFrame)
     #TODO zip anything??? / unzip anything???
     if format == :zip
         zfiles = ZipFile.Writer(file)
-        local f = ZipFile.addfile(dir, "df.csv")
+        local f = ZipFile.addfile(zfiles, "df.csv")
         CSV.write(f, df)
         close(zfiles)
-    else format == :csv
+    elseif format == :csv
         CSV.write(file, df)
     elseif format == :ser
         serialize(file, df)
     elseif format == :jld2
-        JLD2.save(file, Dict("df" => df));
+        JLD2.@save file df=df
+        #TODO switch???
+        # JLD2.@save file {compress=true} df=df
+    elseif format == :jld2c
+        JLD2.@save file {compress=true} df=df
     elseif format == :feather
         Feather.write(file, df)
     elseif format == :arrow
@@ -154,7 +159,7 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
     if format == :zip
         zfiles = ZipFile.Reader(file)
 
-        if size(zfiles.files) != 1
+        if size(zfiles.files,1) != 1
             throw(ErrorException("Zip file does not contain exactly one file: zipfile=$file contents=$(zfiles.files)"))
         end
 
@@ -175,16 +180,16 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
         end
     elseif format == :ser
         df = deserialize(file)
-    elseif format == :jld2
-        df = JLD2.load(file)["df"]
+    elseif format == :jld2 || format == :jld2c
+        JLD2.@load file df
     elseif format == :feather
         df = Feather.read(file)
     elseif format == :arrow  || format == :arrow_lz4 || format == :arrow_zstd
         df = DataFrame(Arrow.Table(file))
-    if format == :parquet
+    elseif format == :parquet
         df = ParquetFiles.load(file) |> DataFrame
     elseif format == :jdf
-        df = JDF.loadjdf(file, df);
+        df = JDF.loadjdf(file);
     # elseif format == :fst
     #     df = FstFileFormat.read(file)
     else
