@@ -1,5 +1,5 @@
 module DataFrameTools
 
-import("io.jl")
+include("io.jl")
 
 end # module

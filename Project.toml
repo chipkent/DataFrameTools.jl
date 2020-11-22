@@ -2,3 +2,15 @@ name = "DataFrameTools"
 uuid = "ff0d0012-cacc-467c-a675-b36108f55689"
 authors = ["David R. (Chip) Kent IV <chipkent@cecropiacapital.com>"]
 version = "0.1.0"
+
+[deps]
+Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Feather = "becb17da-46f6-5d3c-ad1b-1c5fe96bc73c"
+JDF = "babc3d20-cd49-4f60-a736-a8f9c08892d3"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+Parquet = "626c502c-15b0-58ad-a749-f091afb673ae"
+ParquetFiles = "46a55296-af5a-53b0-aaa0-97023b66127f"
+ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"

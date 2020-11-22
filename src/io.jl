@@ -1,22 +1,105 @@
 
 using Logging
+using DataFrames
 using ZipFile
 using CSV
 using JLD2
-using DataFrames
 using Feather
 using Arrow
 using Parquet
 using ParquetFiles
 using JDF
-using FstFileFormat
+# using FstFileFormat
 
-export fileformat, df_write, df_read
+export file_format, compress, uncompress, df_write, df_read
 
 """
 Returns the file format from the file suffix.
 """
 file_format(file::AbstractString)::Symbol = Symbol(splitext(file)[2][2:end])
+
+
+"""
+Creates a compressed file.  The type of compression is inferred from the
+output file name.  subfile is the name of the file within the compressed
+archive.  f is a function which writes to the archive.
+
+The typical use case is:
+
+    compress(file, subfile) do io
+        # put here the body of function f(io) to write to io
+    end
+
+"""
+function compress(f::Function, file::AbstractString, subfile::AbstractString)
+    format = file_format(file)
+    @debug "BEGIN compress: $format $file"
+    t = time()
+
+    if format == :zip
+        local zfiles = ZipFile.Writer(file)
+
+        try
+            local zf = ZipFile.addfile(zfiles, subfile)
+
+            try
+                f(zf)
+            finally
+                close(zf)
+            end
+        finally
+            close(zfiles)
+        end
+    else
+        throw(ErrorException("Unsupported compression format: format=$format"))
+    end
+
+    @debug "END compress: $format $(time() - t)"
+end
+
+
+"""
+Uncompresses a compressed file.  The type of compression is inferred from the
+output file name.  f is a function which reads from the archive.
+
+The typical use case is:
+
+    uncompress(file) do io
+        # put here the body of function f(io) to write to io
+    end
+
+"""
+function uncompress(f::Function, file::AbstractString)
+    format = file_format(file)
+    @debug "BEGIN uncompress: $format $file"
+    t = time()
+
+    if format == :zip
+
+        zfiles = ZipFile.Reader(file)
+
+        try
+            if size(zfiles.files) != 1
+                throw(ErrorException("Zip file does not contain exactly one file: zipfile=$file contents=$(zfiles.files)"))
+            end
+
+            zf = zfiles.files[1]
+
+            try
+                f(zf)
+            finally
+                close(zf)
+            end
+        finally
+            close(zfiles)
+        end
+    else
+        throw(ErrorException("Unsupported compression format: format=$format"))
+    end
+
+    @debug "END uncompress: $format $(time() - t)"
+end
+
 
 """
 Writes a DataFrame to a file.  The file suffix determines how the DataFrame is serialized.
@@ -50,8 +133,8 @@ function df_write!(file::AbstractString, df::DataFrame)
         Parquet.write_parquet(file, df)
     elseif format == :jdf
         JDF.savejdf(file, df);
-    elseif format == :fst
-        FstFileFormat.write(df, file)
+    # elseif format == :fst
+    #     FstFileFormat.write(df, file)
     else
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
@@ -102,8 +185,8 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
         df = ParquetFiles.load(file) |> DataFrame
     elseif format == :jdf
         df = JDF.loadjdf(file, df);
-    elseif format == :fst
-        df = FstFileFormat.read(file)
+    # elseif format == :fst
+    #     df = FstFileFormat.read(file)
     else
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
