@@ -11,27 +11,20 @@ using ParquetFiles
 using JDF
 using FstFileFormat
 
-export df_write, df_read
+export fileformat, df_write, df_read
 
 """
 Returns the file format from the file suffix.
 """
-fileformat(file::AbstractString)::Symbol = Symbol(splitext(file)[2][2:end])
+file_format(file::AbstractString)::Symbol = Symbol(splitext(file)[2][2:end])
 
 """
-Writes a DataFrame to a file.
+Writes a DataFrame to a file.  The file suffix determines how the DataFrame is serialized.
 """
-function df_write!(file::AbstractString, df::DataFrame, format::Symbol, skip_if_present::Bool)
-    #TODO remove skip_if_present
-    if skip_if_present && isfile(file)
-        @debug "SKIPPING write: $format $file"
-        return
-    end
-
-    @debug "BEGIN write: $format $file"
+function df_write!(file::AbstractString, df::DataFrame)
+    format = file_format(file)
+    @debug "BEGIN df_write: $format $file"
     t = time()
-
-    #TODO check for inconsistent suffix --- or get suffix from the file
 
     #TODO zip anything??? / unzip anything???
     if format == :zip
@@ -63,21 +56,25 @@ function df_write!(file::AbstractString, df::DataFrame, format::Symbol, skip_if_
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
 
-    @debug "END write: $format $(time() - t)"
+    @debug "END df_write: $format $(time() - t)"
 end
 
 """
-Reads a DataFrame from a file.
+Reads a DataFrame from a file.  The file suffix determines how the DataFrame is deserialized.
 """
 function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
-    format = fileformat(file)
+    format = file_format(file)
 
-    @debug "BEGIN read $format: $file"
+    @debug "BEGIN df_read $format: $file"
     t = time()
 
     if format == :zip
         zfiles = ZipFile.Reader(file)
-        #TODO assert one file
+
+        if size(zfiles.files) != 1
+            throw(ErrorException("Zip file does not contain exactly one file: zipfile=$file contents=$(zfiles.files)"))
+        end
+
         zf = zfiles.files[1]
 
         if dates_as_strings
@@ -123,6 +120,6 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
         end
     end
 
-    @debug "END read $format: $name $(time() - t)"
+    @debug "END df_read $format: $name $(time() - t)"
     return df
 end
