@@ -9,7 +9,6 @@ using Feather
 using Arrow
 using Parquet
 using JDF
-# using FstFileFormat
 
 export file_format, compress, uncompress, df_write, df_read
 
@@ -135,8 +134,6 @@ function df_write(file::AbstractString, df::DataFrame)
         Parquet.write_parquet(file, df)
     elseif format == :jdf
         JDF.savejdf(file, df);
-    # elseif format == :fst
-    #     FstFileFormat.write(df, file)
     else
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
@@ -147,7 +144,7 @@ end
 """
 Reads a DataFrame from a file.  The file suffix determines how the DataFrame is deserialized.
 """
-function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
+function df_read(file::AbstractString; dates_as_strings::Bool=true, missing_type::Type=String, missing_types::Dict{String,Type}=Dict{String,Type}())::DataFrame
     format = file_format(file)
 
     @debug "BEGIN df_read $format: $file"
@@ -202,21 +199,16 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
 
     elseif format == :jdf
         df = JDF.loadjdf(file);
-    # elseif format == :fst
-    #     df = FstFileFormat.read(file)
     else
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
 
-    #TODO move out???
-    #TODO move to write?
-    # # feather can't handle all missing
+    # Some serialization methods can not handle columns of type Missing.
     for n in names(df)
         if eltype(df[!,n]) == Missing
-            #TODO remove print
-            println("Removed $n for Feather.jl")
-            #TODO make optional
-            df[!,n] = Vector{Union{Missing, String}}(missing, size(df, 1))
+            T = haskey(missing_types, n) ? missing_types[n] : missing_type
+            @debug "Column with all missing values retyped as Vector{Union{Missing, $T}}: name=$n"
+            df[!,n] = Vector{Union{Missing, T}}(missing, size(df, 1))
         end
     end
 
