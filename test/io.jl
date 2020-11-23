@@ -33,4 +33,4 @@ for format in formats
 end
 
 @test_throws ErrorException df_write(bad, df)
-@test_throws ErrorException df_read(file)
+@test_throws ErrorException df_read(bad)

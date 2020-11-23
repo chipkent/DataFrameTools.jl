@@ -8,7 +8,6 @@ using JLD2
 using Feather
 using Arrow
 using Parquet
-using ParquetFiles
 using JDF
 # using FstFileFormat
 
@@ -122,8 +121,6 @@ function df_write(file::AbstractString, df::DataFrame)
         serialize(file, df)
     elseif format == :jld2
         JLD2.@save file df=df
-        #TODO switch???
-        # JLD2.@save file {compress=true} df=df
     elseif format == :jld2c
         JLD2.@save file {compress=true} df=df
     elseif format == :feather
@@ -187,7 +184,22 @@ function df_read(file::AbstractString; dates_as_strings::Bool=true)::DataFrame
     elseif format == :arrow  || format == :arrow_lz4 || format == :arrow_zstd
         df = DataFrame(Arrow.Table(file))
     elseif format == :parquet
-        df = ParquetFiles.load(file) |> DataFrame
+        parquetfile = Parquet.File(file)
+
+        try
+            local cc = BatchedColumnsCursor(parquetfile)
+            local batchvals, state = iterate(cc)
+
+            df = DataFrame()
+
+            for key in keys(batchvals)
+                df[!,key] = batchvals[key]
+            end
+
+        finally
+            close(parquetfile)
+        end
+
     elseif format == :jdf
         df = JDF.loadjdf(file);
     # elseif format == :fst
