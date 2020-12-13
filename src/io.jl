@@ -276,6 +276,6 @@ function _df_read(file, format::Symbol; dates_as_strings::Bool=true, missing_typ
         end
     end
 
-    @debug "END df_read $format: $name $(time() - t)"
+    @debug "END df_read $format: $file $(time() - t)"
     return df
 end
