@@ -262,7 +262,7 @@ function _df_read(file, format::Symbol; dates_as_strings::Bool=true, missing_typ
             throw(ErrorException("JDF is not supported in compressed archives."))
         end
 
-        df = JDF.loadjdf(file);
+        df = DataFrame(JDF.loadjdf(file));
     else
         throw(ErrorException("Unsupported dataframe format: format=$format"))
     end
