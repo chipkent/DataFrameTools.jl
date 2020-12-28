@@ -116,8 +116,11 @@ df_formats()::Vector{Symbol} = [:csv, :ser, :jld2, :jld2c, :feather, :arrow, :ar
 Writes a DataFrame to a file.  The file suffix determines how the DataFrame is serialized.
 If the file has a compressed suffix, subformat determines how the DataFrame
 is serialized in the compressed archive.
+
+- `subformat::Union{Nothing,Symbol}=nothing`: format to used within a compressed archive.
+- `dictencode::Bool=true`: true to use a dictionary encoding, if possible, and false otherwise.
 """
-function df_write(file::AbstractString, df::DataFrame; subformat::Union{Nothing,Symbol}=nothing)
+function df_write(file::AbstractString, df::DataFrame; subformat::Union{Nothing,Symbol}=nothing, dictencode::Bool=true)
     format = file_format(file)
 
     if in(format, compression_formats())
@@ -128,20 +131,21 @@ function df_write(file::AbstractString, df::DataFrame; subformat::Union{Nothing,
         subfile = "db." * String(subformat)
 
         compress(file, subfile) do f
-            _df_write(f, subformat, df)
+            _df_write(f, subformat, df, dictencode=dictencode)
         end
 
         return
     end
 
-    _df_write(file, format, df)
+    _df_write(file, format, df, dictencode=dictencode)
 end
 
 
 """
 Writes a DataFrame.  File can be a file path or an IO.
+- `dictencode::Bool=true`: true to use a dictionary encoding, if possible, and false otherwise.
 """
-function _df_write(file, format::Symbol, df::DataFrame)
+function _df_write(file, format::Symbol, df::DataFrame; dictencode::Bool=true)
 
     @debug "BEGIN df_write: $format $file"
     t = time()
@@ -165,11 +169,11 @@ function _df_write(file, format::Symbol, df::DataFrame)
     elseif format == :feather
         Feather.write(file, df)
     elseif format == :arrow
-        Arrow.write(file, df)
+        Arrow.write(file, df; dictencode=true)
     elseif format == :arrow_lz4
-        Arrow.write(file, df; compress=:lz4)
+        Arrow.write(file, df; compress=:lz4, dictencode=dictencode)
     elseif format == :arrow_zstd
-        Arrow.write(file, df; compress=:zstd)
+        Arrow.write(file, df; compress=:zstd, dictencode=dictencode)
     elseif format == :parquet
         if !isa(file, AbstractString)
             throw(ErrorException("Parquet is not supported in compressed archives."))
