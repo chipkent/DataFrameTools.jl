@@ -1,5 +1,5 @@
 
-using Documenter, RateLimiter
+using Documenter, DataFrameTools
 
 makedocs(
     modules = [DataFrameTools],
