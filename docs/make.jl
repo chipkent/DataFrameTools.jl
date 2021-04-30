@@ -2,7 +2,7 @@
 using Documenter, RateLimiter
 
 makedocs(
-    modules = [RateLimiter],
+    modules = [DataFrameTools],
     sitename="DataFrameTools.jl", 
     authors = "Chip Kent",
     format = Documenter.HTML(),

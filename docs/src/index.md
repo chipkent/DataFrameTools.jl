@@ -1,5 +1,5 @@
 
-# RateLimiter.jl Documentation
+# DataFrameTools.jl Documentation
 
 ```@contents
 ```
