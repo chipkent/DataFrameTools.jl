@@ -13,18 +13,27 @@ using JDF
 export file_format, compression_formats, compress, uncompress, df_formats, df_write, df_read
 
 """
+    file_format(file::AbstractString)::Symbol
+
 Returns the file format from the file suffix.
+
+# Arguments
+- `file::AbstractString`: file path
 """
 file_format(file::AbstractString)::Symbol = Symbol(splitext(file)[2][2:end])
 
 
 """
+    compression_formats()::Vector{Symbol}
+
 Returns the file formats supported for compressed archives.
 """
 compression_formats()::Vector{Symbol} = [:zip]
 
 
 """
+    compress(f::Function, file::AbstractString, subfile::AbstractString)
+
 Creates a compressed file.  The type of compression is inferred from the
 output file name.  subfile is the name of the file within the compressed
 archive.  f is a function which writes to the archive.
@@ -35,6 +44,10 @@ The typical use case is:
         # put here the body of function f(io) to write to io
     end
 
+# Arguments
+- `f::Function`: function to execute on the file contents
+- `file::AbstractString`: compressed file path
+- `subfile::AbstractString`: subfile within the archive
 """
 function compress(f::Function, file::AbstractString, subfile::AbstractString)
     format = file_format(file)
@@ -64,6 +77,8 @@ end
 
 
 """
+    uncompress(f::Function, file::AbstractString)
+
 Uncompresses a compressed file.  The type of compression is inferred from the
 output file name.  f is a function which reads from the archive.
 
@@ -73,6 +88,9 @@ The typical use case is:
         # put here the body of function f(io) to write to io
     end
 
+# Arguments
+- `f::Function`: function to execute on the file contents
+- `file::AbstractString`: file path    
 """
 function uncompress(f::Function, file::AbstractString)
     format = file_format(file)
@@ -107,16 +125,23 @@ end
 
 
 """
+    df_formats()::Vector{Symbol}
+
 Returns the file formats supported for DataFrames.
 """
 df_formats()::Vector{Symbol} = [:csv, :ser, :jld2, :jld2c, :feather, :arrow, :arrow_lz4, :arrow_zstd, :parquet, :jdf]
 
 
 """
+    df_write(file::AbstractString, df::DataFrame; subformat::Union{Nothing,Symbol}=nothing, dictencode::Bool=true)
+
 Writes a DataFrame to a file.  The file suffix determines how the DataFrame is serialized.
 If the file has a compressed suffix, subformat determines how the DataFrame
 is serialized in the compressed archive.
 
+# Arguments
+- `file::AbstractString`: file path    
+- `df::DataFrame`: dataframe to export
 - `subformat::Union{Nothing,Symbol}=nothing`: format to used within a compressed archive.
 - `dictencode::Bool=true`: true to use a dictionary encoding, if possible, and false otherwise.
 """
@@ -195,7 +220,15 @@ end
 
 
 """
+    df_read(file::AbstractString; dates_as_strings::Bool=true, missing_type::Type=String, missing_types::Dict{String,Type}=Dict{String,Type}())::DataFrame
+
 Reads a DataFrame from a file.  The file suffix determines how the DataFrame is deserialized.
+
+# Arguments
+- `file::AbstractString`: file path    
+- `dates_as_strings::Bool=true`: true to parse dates as strings; false to parse dates as dates. 
+- `missing_type::Type=String`: type to use if all values are missing, 
+- `missing_types::Dict{String,Type}=Dict{String,Type}()`: type to use for missing columns
 """
 function df_read(file::AbstractString; dates_as_strings::Bool=true, missing_type::Type=String, missing_types::Dict{String,Type}=Dict{String,Type}())::DataFrame
     format = file_format(file)
