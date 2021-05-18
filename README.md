@@ -2,7 +2,7 @@
 ![Register](https://github.com/chipkent/DataFrameTools.jl/actions/workflows/register.yml/badge.svg)
 ![Document](https://github.com/chipkent/DataFrameTools.jl/actions/workflows/document.yml/badge.svg)
 ![Compat Helper](https://github.com/chipkent/DataFrameTools.jl/actions/workflows/compathelper.yml/badge.svg)
-![Tagbot](https://github.com/chipkent/DataFrameTools.jl/actions/workflows/tagbot.yml/badge.svg)
+![Tagbot](https://github.com/chipkent/DataFrameTools.jl/actions/workflows/TagBot.yml/badge.svg)
 
 # DataFrameTools.jl
 Julia package containing utility functions for working with DataFrames.
