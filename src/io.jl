@@ -158,11 +158,10 @@ function df_write(file::AbstractString, df::DataFrame; subformat::Union{Nothing,
         compress(file, subfile) do f
             _df_write(f, subformat, df, dictencode=dictencode)
         end
-
-        return
+	else
+		_df_write(file, format, df, dictencode=dictencode)
     end
-
-    _df_write(file, format, df, dictencode=dictencode)
+	df
 end
 
 
