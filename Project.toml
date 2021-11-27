@@ -1,7 +1,7 @@
 name = "DataFrameTools"
 uuid = "ff0d0012-cacc-467c-a675-b36108f55689"
 authors = ["David R. (Chip) Kent IV <chipkent@cecropiacapital.com>"]
-version = "1.0.7"
+version = "1.0.8"
 
 [deps]
 Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
@@ -17,7 +17,7 @@ ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [compat]
 Arrow = "1.4, 2"
-CSV = "0.8"
+CSV = "0.8, 0.9"
 DataFrames = "1.0"
 Feather = "0.5"
 JDF = "^0.4.5"
