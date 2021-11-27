@@ -1,3 +1,4 @@
+using Dates
 
 dir = mktempdir()
 
@@ -52,3 +53,8 @@ end
 
 @test_throws ErrorException df_write(bad, df)
 @test_throws ErrorException df_read(bad)
+
+# Test Issue #14
+df = DataFrame()
+df[!, :test] = [DateTime(2000,1,1,1,1,1), missing]
+DataFrameTools.df_write(joinpath(dir, "test.jdf"), df)
