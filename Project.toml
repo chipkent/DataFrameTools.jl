@@ -1,7 +1,7 @@
 name = "DataFrameTools"
 uuid = "ff0d0012-cacc-467c-a675-b36108f55689"
 authors = ["David R. (Chip) Kent IV <chipkent@cecropiacapital.com>"]
-version = "1.0.8"
+version = "1.0.7"
 
 [deps]
 Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
