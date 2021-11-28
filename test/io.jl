@@ -58,3 +58,13 @@ end
 df = DataFrame()
 df[!, :test] = [DateTime(2000,1,1,1,1,1), missing]
 DataFrameTools.df_write(joinpath(dir, "test.jdf"), df)
+
+# Test PR #15
+using Pipe
+df = DataFrame()
+df[!, :test] = [DateTime(2000,1,1,1,1,1), missing]
+in_file = joinpath(dir, "test.feather")
+out_file = joinpath(dir, "test2.feather")
+df_write(in_file, df)
+pipe_it(in_file, out_file) = @pipe df_read(in_file) |> DataFrame |> df_write(out_file, _)
+pipe_it(in_file, out_file)
